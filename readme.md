@@ -1,5 +1,3 @@
-![status](https://secure.travis-ci.org/contra/gulp-concat.svg?branch=master)
-
 ## Installation
 
 Install package with NPM and add it to your development dependencies:
@@ -86,13 +84,14 @@ var main = (function (file1, file3) {
 );
 ```
 
-### Note
-1. It has been created to be used with gulp-umd, which takes one file to wrap.
-2. It is possible to use Typescript and transpile with AMD format, then use this plugin along with gulp-umd
-to write splited libraries or modules in a strong language like typescript, make use of imports and exports and have a 
-makes-sense result in UMD format.
+## Reason to be
 
-These two were the main reasons why I wrote this plugin.
+1.It can be used with gulp-umd, which takes one file to wrap.
+
+2. It is possible to use Typescript and transpile with AMD format, then use this plugin along with gulp-umd to generate
+good autonomous code from strong sources. 
+
+3. Alternative to Babel's deamdify, since it can be used with Typescript or CoffeeScript
 
 ## Usage
 
@@ -109,13 +108,13 @@ gulp.task('build', function() {
 });
 ```
 
-## Current constraints notes
+## Constraints notes
 
-* Only handles one file which makes a require([...] function(...) {...}) call
+* It transverses the dependency tree to properly order the code.
+* It expects no circular dependencies
 * It expects that all files from gulp.src contain all submodules
 * More than one define can be found in one file, but it's pretty recommended to use one define per file
-* It expects no circular dependencies
-* It transverses the dependency tree to properly order the code.
+* Only handles one file which makes a require([...] function(...) {...}) call
 
 ## Contribute
 
