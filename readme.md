@@ -86,7 +86,7 @@ var main = (function (file1, file3) {
 
 ## Reason to be
 
-1.It can be used with gulp-umd, which takes one file to wrap.
+1. It can be used with gulp-umd, which takes one file to wrap.
 
 2. It is possible to use Typescript and transpile with AMD format, then use this plugin along with gulp-umd to generate
 good autonomous code from strong sources. 
