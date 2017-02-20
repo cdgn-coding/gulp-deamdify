@@ -1,3 +1,3 @@
-require(['file1', 'file3'], function(file1) {
+require(function() {
   file1('Hello world!');
 })

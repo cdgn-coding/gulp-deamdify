@@ -46,29 +46,31 @@ module.exports = (options) ->
       new Array()
     ).concat deps
 
-  require = (deps, fn) ->
-    main.code = fn.toString()
-    main.deps = deps
-    hasMain = true
-    
-  define = (name, deps, fn) ->
-    @allowed = ['code', 'deps', 'name']
-    removeExtension = (path) -> path.replace '.js', ''
-    generateRelative = (path, base) -> path.replace base, ''
-    receiveParamsMap = (map, argument, i) => 
-      param = @allowed[i]
+  mapParams = (args, allowed) ->
+    toAllowed = (map, argument, i) -> 
+      param = allowed[i]
       map[param] = argument
       return map
-
-    args = lodash.chain arguments
+    return lodash.chain args
       .reverse()
-      .reduce receiveParamsMap, {}
+      .reduce toAllowed, {}
       .value()
-    
-    deps = args.deps or []
-    name = args.name or removeExtension generateRelative lastest.path, lastest.base
-    func = args.code.toString()
 
+  require = () ->
+    args = mapParams arguments, ['code', 'deps', 'name']
+    deps = args.deps or []
+    func = args.code.toString()
+    main.deps = deps
+    main.code = func
+    hasMain = true
+    
+  define = () ->
+    removeExtensionOf = (path) -> path.replace '.js', ''
+    generateRelative = (path, base) -> path.replace base, ''
+    args = mapParams arguments, ['code', 'deps', 'name']
+    deps = args.deps or []
+    name = args.name or removeExtensionOf generateRelative lastest.path, lastest.base
+    func = args.code.toString()
     modules[name] =
       'code' : func
       'deps' : deps

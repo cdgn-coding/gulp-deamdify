@@ -9,7 +9,7 @@ path = require('path');
 lodash = require('lodash');
 
 module.exports = function(options) {
-  var continueStream, define, defineFactory, formatDependencies, formatModules, hasMain, lastest, main, modules, parseModule, require, requireFactory, transverse, unify;
+  var continueStream, define, defineFactory, formatDependencies, formatModules, hasMain, lastest, main, mapParams, modules, parseModule, require, requireFactory, transverse, unify;
   lastest = false;
   hasMain = false;
   modules = new Object;
@@ -44,31 +44,36 @@ module.exports = function(options) {
       return acumulated.concat(transverse(modules[current].deps, modules));
     }, new Array()).concat(deps);
   };
-  require = function(deps, fn) {
-    main.code = fn.toString();
+  mapParams = function(args, allowed) {
+    var toAllowed;
+    toAllowed = function(map, argument, i) {
+      var param;
+      param = allowed[i];
+      map[param] = argument;
+      return map;
+    };
+    return lodash.chain(args).reverse().reduce(toAllowed, {}).value();
+  };
+  require = function() {
+    var args, deps, func;
+    args = mapParams(arguments, ['code', 'deps', 'name']);
+    deps = args.deps || [];
+    func = args.code.toString();
     main.deps = deps;
+    main.code = func;
     return hasMain = true;
   };
-  define = function(name, deps, fn) {
-    var args, func, generateRelative, receiveParamsMap, removeExtension;
-    this.allowed = ['code', 'deps', 'name'];
-    removeExtension = function(path) {
+  define = function() {
+    var args, deps, func, generateRelative, name, removeExtensionOf;
+    removeExtensionOf = function(path) {
       return path.replace('.js', '');
     };
     generateRelative = function(path, base) {
       return path.replace(base, '');
     };
-    receiveParamsMap = (function(_this) {
-      return function(map, argument, i) {
-        var param;
-        param = _this.allowed[i];
-        map[param] = argument;
-        return map;
-      };
-    })(this);
-    args = lodash.chain(arguments).reverse().reduce(receiveParamsMap, {}).value();
+    args = mapParams(arguments, ['code', 'deps', 'name']);
     deps = args.deps || [];
-    name = args.name || removeExtension(generateRelative(lastest.path, lastest.base));
+    name = args.name || removeExtensionOf(generateRelative(lastest.path, lastest.base));
     func = args.code.toString();
     return modules[name] = {
       'code': func,
