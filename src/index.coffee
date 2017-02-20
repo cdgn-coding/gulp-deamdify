@@ -1,8 +1,10 @@
 through = require 'through2'
 Vinyl = require 'vinyl'
+path = require 'path'
+lodash = require 'lodash'
 
 module.exports = (options) -> 
-    lastest = undefined
+    lastest = false
     modules = new Object
     main = new Object
 
@@ -10,45 +12,38 @@ module.exports = (options) ->
     options.exports = options.exports or 'main'
     options.outputs = options.outputs or 'main.js'
 
+    formatDependencies = (dependencies) ->
+        lodash.map(
+                dependencies,
+                (dependency) -> """modules['#{dependency}']"""
+            ).toString()
+
     requireFactory = (module) ->
-        code = module.code
-        deps = []
-        for dep in module.deps
-            deps.push """modules['#{dep}']"""
-        return """var #{options.exports} = (#{code}).apply(
+        """var #{options.exports} = (#{module.code}).apply(
             #{options.exports},
-            [#{deps.toString()}]
+            [#{formatDependencies module.deps}]
         );
         """
 
     defineFactory = (name, module) ->
-        code = module.code
-        deps = []
-        for dep in module.deps
-            deps.push """modules['#{dep}']"""
-        return """
-            modules['#{name}'] = (#{code}).apply(
+        """
+            modules['#{name}'] = (#{module.code}).apply(
                 modules['#{name}'],
-                [#{deps.toString()}]
+                [#{formatDependencies module.deps}]
             );\n
         """
 
     unify = (transversed) ->
-        for i of transversed
-            name = transversed[i]
-            if not modules[name].found
-                modules[name].found = true 
-            else
-                transversed.splice i, 1
-        return transversed
+        transversed.reduce(
+            (acumulated, current) -> acumulated.concat current unless current of acumulated,
+            new Array()
+        )
 
     transverse = (deps, modules) ->
-        future = []
-        if deps.length isnt 0
-            for dep in deps
-                future =  future.concat transverse modules[dep].deps, modules
-        future =  future.concat deps
-        return future              
+        deps.reduce(
+            (acumulated, current) -> acumulated.concat transverse(modules[current].deps, modules),
+            new Array()
+        ).concat deps
 
     require = (deps, fn) ->
         main.code = fn.toString()
@@ -65,17 +60,15 @@ module.exports = (options) ->
         lastest = file
         cb()
 
-    reduceModules = (s, name) -> s.concat defineFactory name, modules[name]
+    formatModules = (acumulated, name) -> acumulated.concat defineFactory name, modules[name]
 
-    return through objectMode: true, deamdfy, () ->
+    return through objectMode: true, deamdfy, (cb) ->
         order = unify transverse main.deps, modules
         content = order
-            .reduce reduceModules, 'var modules = {};'
+            .reduce formatModules, 'var modules = {};\n'
             .concat requireFactory main
-        stream = new Vinyl(
-            cwd : lastest.cwd
-            base : lastest.base
-            path : lastest.path
-            contents : new Buffer(content)
-        )
-        this.push stream
+        built = lastest.clone()
+        built.contents = new Buffer(content)
+        built.path = path.join(lastest.base, options.outputs)
+        this.push built
+        cb()

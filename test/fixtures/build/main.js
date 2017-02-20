@@ -1,4 +1,11 @@
-var modules = {};modules['file3'] = (function () {
+var modules = {};
+modules['file3'] = (function () {
+  return console.log;
+}).apply(
+    modules['file3'],
+    []
+);
+modules['file3'] = (function () {
   return console.log;
 }).apply(
     modules['file3'],
@@ -17,6 +24,12 @@ modules['file1'] = (function (file2) {
 }).apply(
     modules['file1'],
     [modules['file2']]
+);
+modules['file3'] = (function () {
+  return console.log;
+}).apply(
+    modules['file3'],
+    []
 );
 var main = (function (file1) {
   file1('Hello world!');

@@ -26,6 +26,6 @@ gulp.task 'watch', () ->
 
 
 gulp.task 'test', () ->
-  return gulp.src 'test/*.js'
+  return gulp.src 'test/fixtures/*.js'
     .pipe deamdfy()
-    .pipe gulp.dest 'test/build'
+    .pipe gulp.dest 'test/fixtures/build'
