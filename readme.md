@@ -2,7 +2,7 @@
 
 Install package with NPM and add it to your development dependencies:
 
-`npm install --save-dev gulp-concat`
+`npm install --save-dev gulp-deamdify`
 
 ## Information
 
