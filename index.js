@@ -9,7 +9,7 @@ path = require('path');
 lodash = require('lodash');
 
 module.exports = function(options) {
-  var deamdfy, define, defineFactory, formatDependencies, formatModules, lastest, main, modules, require, requireFactory, transverse, unify;
+  var continueStream, define, defineFactory, formatDependencies, formatModules, lastest, main, modules, parseModule, require, requireFactory, transverse, unify;
   lastest = false;
   modules = new Object;
   main = new Object;
@@ -28,9 +28,13 @@ module.exports = function(options) {
     return "modules['" + name + "'] = (" + module.code + ").apply(\n    modules['" + name + "'],\n    [" + (formatDependencies(module.deps)) + "]\n);\n";
   };
   unify = function(transversed) {
-    return transversed.reduce(function(acumulated, current) {
-      if (!(current in acumulated)) {
-        return acumulated.concat(current);
+    return transversed.reduce(function(tree, current) {
+      if (!lodash.some(tree, function(dependency) {
+        return dependency === current;
+      })) {
+        return tree.concat(current);
+      } else {
+        return tree;
       }
     }, new Array());
   };
@@ -50,17 +54,15 @@ module.exports = function(options) {
       'found': false
     };
   };
-  deamdfy = function(file, enc, cb) {
+  formatModules = function(acumulated, name) {
+    return acumulated.concat(defineFactory(name, modules[name]));
+  };
+  parseModule = function(file, enc, cb) {
     eval(file.contents.toString());
     lastest = file;
     return cb();
   };
-  formatModules = function(acumulated, name) {
-    return acumulated.concat(defineFactory(name, modules[name]));
-  };
-  return through({
-    objectMode: true
-  }, deamdfy, function(cb) {
+  continueStream = function(cb) {
     var built, content, order;
     order = unify(transverse(main.deps, modules));
     content = order.reduce(formatModules, 'var modules = {};\n').concat(requireFactory(main));
@@ -69,5 +71,8 @@ module.exports = function(options) {
     built.path = path.join(lastest.base, options.outputs);
     this.push(built);
     return cb();
-  });
+  };
+  return through({
+    objectMode: true
+  }, parseModule, continueStream);
 };
