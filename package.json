@@ -1,7 +1,13 @@
 {
-  "name": "gulp-unify-js",
+  "name": "gulp-deamdify",
   "version": "1.0.0",
-  "description": "",
+  "description": "Converts a module written in various files and AMD format in an autonomous one-file module.",
+  "keywords": [
+    "deamdify",
+    "gulpplugin",
+    "amd",
+    "deamd"
+  ],
   "main": "index.js",
   "dependencies": {
     "concat-with-sourcemaps": "^1.0.4",
@@ -16,16 +22,19 @@
     "gulp-coffee": "^2.3.3",
     "gulp-plumber": "^1.1.0",
     "gulp-util": "^3.0.8",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "should": "^11.2.0",
+    "stream-assert": "^2.0.3"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --compilers coffee:coffee-script/register",
+    "build" : "gulp build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cnexans/gulp-unify-js.git"
   },
-  "author": "",
+  "author": "Carlos David G. Nexans <me@cnexans.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/cnexans/gulp-unify-js/issues"
