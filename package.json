@@ -1,6 +1,6 @@
 {
   "name": "gulp-deamdify",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Converts a module written in various files and AMD format in an autonomous one-file module.",
   "keywords": [
     "deamdify",
