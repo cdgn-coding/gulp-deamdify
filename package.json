@@ -35,7 +35,7 @@
     "url": "git+https://github.com/cnexans/gulp-unify-js.git"
   },
   "author": "Carlos David G. Nexans <me@cnexans.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/cnexans/gulp-unify-js/issues"
   },
