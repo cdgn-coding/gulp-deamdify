@@ -1,4 +1,5 @@
-var Vinyl, lodash, path, through;
+var Vinyl, lodash, path, through,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 through = require('through2');
 
@@ -9,7 +10,7 @@ path = require('path');
 lodash = require('lodash');
 
 module.exports = function(options) {
-  var continueStream, define, defineFactory, formatDependencies, formatModules, hasMain, lastest, main, mapParams, modules, parseModule, require, requireFactory, transverse, unify;
+  var continueStream, define, defineFactory, defineFromExports, defineFromReturn, formatDependencies, formatModules, hasMain, lastest, main, mapParams, modules, parseModule, require, requireFactory, transverse, unify;
   lastest = false;
   hasMain = false;
   modules = new Object;
@@ -19,14 +20,28 @@ module.exports = function(options) {
   options.outputs = options.outputs || 'main.js';
   formatDependencies = function(dependencies) {
     return lodash.map(dependencies, function(dependency) {
-      return "modules['" + dependency + "']";
+      if (dependency !== 'exports') {
+        return "modules['" + dependency + "']";
+      } else {
+        return "exports";
+      }
     }).toString();
   };
   requireFactory = function(module) {
     return "var " + options.exports + " = (" + module.code + ").apply(\n  " + options.exports + ",\n  [" + (formatDependencies(module.deps)) + "]\n);";
   };
-  defineFactory = function(name, module) {
+  defineFromReturn = function(name, module) {
     return "modules['" + name + "'] = (" + module.code + ").apply(\n  modules['" + name + "'],\n  [" + (formatDependencies(module.deps)) + "]\n);\n";
+  };
+  defineFromExports = function(name, module) {
+    return "modules['" + name + "'] = (function() {\n  var exports = {};\n  (" + module.code + ").apply(\n    modules['" + name + "'],\n    [" + (formatDependencies(module.deps)) + "]\n  )\n  return exports;\n})()\n";
+  };
+  defineFactory = function(name, module) {
+    if (indexOf.call(module.deps, 'exports') >= 0) {
+      return defineFromExports(name, module);
+    } else {
+      return defineFromReturn(name, module);
+    }
   };
   unify = function(transversed) {
     return transversed.reduce(function(tree, current) {
@@ -41,7 +56,11 @@ module.exports = function(options) {
   };
   transverse = function(deps, modules) {
     return deps.reduce(function(acumulated, current) {
-      return acumulated.concat(transverse(modules[current].deps, modules));
+      if (current !== 'exports' && current !== 'require') {
+        return acumulated.concat(transverse(modules[current].deps, modules));
+      } else {
+        return acumulated;
+      }
     }, new Array()).concat(deps);
   };
   mapParams = function(args, allowed) {
@@ -73,7 +92,7 @@ module.exports = function(options) {
     };
     args = mapParams(arguments, ['code', 'deps', 'name']);
     deps = args.deps || [];
-    name = args.name || removeExtensionOf(generateRelative(lastest.path, lastest.base));
+    name = args.name || removeExtensionOf(generateRelative(lastest.path, lastest.cwd));
     func = args.code.toString();
     return modules[name] = {
       'code': func,
@@ -91,7 +110,9 @@ module.exports = function(options) {
   continueStream = function(cb) {
     var built, content;
     if (hasMain && lastest) {
-      content = (unify(transverse(main.deps, modules))).reduce(formatModules, 'var modules = {};\n').concat(requireFactory(main));
+      content = (unify(transverse(main.deps, modules))).filter(function(module) {
+        return module !== 'exports' && module !== 'require';
+      }).reduce(formatModules, 'var modules = { require : function(e) {return this[e]; } };\n').concat(requireFactory(main));
       built = lastest.clone();
       built.contents = new Buffer(content);
       built.path = path.join(lastest.base, options.outputs);

@@ -16,7 +16,9 @@ module.exports = (options) ->
   formatDependencies = (dependencies) ->
     lodash.map(
         dependencies,
-        (dependency) -> """modules['#{dependency}']"""
+        (dependency) -> 
+          if dependency isnt 'exports' then """modules['#{dependency}']"""
+          else """exports"""
       ).toString()
 
   requireFactory = (module) ->
@@ -26,13 +28,30 @@ module.exports = (options) ->
     );
     """
 
-  defineFactory = (name, module) ->
+  defineFromReturn = (name, module) ->
     """
       modules['#{name}'] = (#{module.code}).apply(
         modules['#{name}'],
         [#{formatDependencies module.deps}]
       );\n
     """
+
+  defineFromExports = (name, module) ->
+    """
+      modules['#{name}'] = (function() {
+        var exports = {};
+        (#{module.code}).apply(
+          modules['#{name}'],
+          [#{formatDependencies module.deps}]
+        )
+        return exports;
+      })()\n
+    """
+
+  defineFactory = (name, module) ->
+    if 'exports' in module.deps then defineFromExports name, module
+    else defineFromReturn name, module
+
 
   unify = (transversed) ->
     transversed.reduce(
@@ -42,7 +61,9 @@ module.exports = (options) ->
 
   transverse = (deps, modules) ->
     deps.reduce(
-      (acumulated, current) -> acumulated.concat transverse modules[current].deps, modules,
+      (acumulated, current) -> 
+        if (current isnt 'exports' and current isnt 'require') then (acumulated.concat transverse modules[current].deps, modules)
+        else acumulated
       new Array()
     ).concat deps
 
@@ -69,7 +90,7 @@ module.exports = (options) ->
     generateRelative = (path, base) -> path.replace base, ''
     args = mapParams arguments, ['code', 'deps', 'name']
     deps = args.deps or []
-    name = args.name or removeExtensionOf generateRelative lastest.path, lastest.base
+    name = args.name or removeExtensionOf generateRelative lastest.path, lastest.cwd
     func = args.code.toString()
     modules[name] =
       'code' : func
@@ -78,14 +99,19 @@ module.exports = (options) ->
   formatModules = (acumulated, name) -> acumulated.concat defineFactory name, modules[name]
 
   parseModule = (file, enc, cb) ->
+    #console.log 'path', file.path
+    #console.log 'base', file.base
     lastest = file
     eval file.contents.toString()
     cb()
 
   continueStream = (cb) ->
+    #console.log modules
+    #console.log main
     if hasMain and lastest
       content = (unify transverse main.deps, modules)
-        .reduce formatModules, 'var modules = {};\n'
+        .filter (module) -> module isnt 'exports' and module isnt 'require'
+        .reduce formatModules, 'var modules = { require : function(e) {return this[e]; } };\n'
         .concat requireFactory main
       built = lastest.clone()
       built.contents = new Buffer(content)
