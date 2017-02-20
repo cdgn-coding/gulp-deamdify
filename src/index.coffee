@@ -5,6 +5,7 @@ lodash = require 'lodash'
 
 module.exports = (options) -> 
     lastest = false
+    hasMain = false
     modules = new Object
     main = new Object
 
@@ -53,7 +54,6 @@ module.exports = (options) ->
         modules[name] =
             'code' : fn.toString()
             'deps' : deps
-            'found' : false
 
     formatModules = (acumulated, name) -> acumulated.concat defineFactory name, modules[name]
 
@@ -73,4 +73,8 @@ module.exports = (options) ->
         this.push built
         cb()
 
-    return through objectMode: true, parseModule, continueStream
+    return through(
+        objectMode: true,
+        parseModule, 
+        (cb) -> unless hasMain and lastest then cb() else continueStream cb
+    )

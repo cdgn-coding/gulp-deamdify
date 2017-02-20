@@ -9,8 +9,9 @@ path = require('path');
 lodash = require('lodash');
 
 module.exports = function(options) {
-  var continueStream, define, defineFactory, formatDependencies, formatModules, lastest, main, modules, parseModule, require, requireFactory, transverse, unify;
+  var continueStream, define, defineFactory, formatDependencies, formatModules, hasMain, lastest, main, modules, parseModule, require, requireFactory, transverse, unify;
   lastest = false;
+  hasMain = false;
   modules = new Object;
   main = new Object;
   options = options || {};
@@ -50,8 +51,7 @@ module.exports = function(options) {
   define = function(name, deps, fn) {
     return modules[name] = {
       'code': fn.toString(),
-      'deps': deps,
-      'found': false
+      'deps': deps
     };
   };
   formatModules = function(acumulated, name) {
@@ -74,5 +74,11 @@ module.exports = function(options) {
   };
   return through({
     objectMode: true
-  }, parseModule, continueStream);
+  }, parseModule, function(cb) {
+    if (!(hasMain && lastest)) {
+      return cb();
+    } else {
+      return continueStream(cb);
+    }
+  });
 };
