@@ -49,6 +49,7 @@ module.exports = (options) ->
     require = (deps, fn) ->
         main.code = fn.toString()
         main.deps = deps
+        hasMain = true
         
     define = (name, deps, fn) ->
         modules[name] =
@@ -63,18 +64,18 @@ module.exports = (options) ->
         cb()
 
     continueStream = (cb) ->
-        order = unify transverse main.deps, modules
-        content = order
-            .reduce formatModules, 'var modules = {};\n'
-            .concat requireFactory main
-        built = lastest.clone()
-        built.contents = new Buffer(content)
-        built.path = path.join(lastest.base, options.outputs)
-        this.push built
+        if hasMain and lastest
+            content = (unify transverse main.deps, modules)
+                .reduce formatModules, 'var modules = {};\n'
+                .concat requireFactory main
+            built = lastest.clone()
+            built.contents = new Buffer(content)
+            built.path = path.join(lastest.base, options.outputs)
+            this.push built
         cb()
 
     return through(
         objectMode: true,
         parseModule, 
-        (cb) -> unless hasMain and lastest then cb() else continueStream cb
+        continueStream
     )

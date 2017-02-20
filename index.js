@@ -46,7 +46,8 @@ module.exports = function(options) {
   };
   require = function(deps, fn) {
     main.code = fn.toString();
-    return main.deps = deps;
+    main.deps = deps;
+    return hasMain = true;
   };
   define = function(name, deps, fn) {
     return modules[name] = {
@@ -63,22 +64,17 @@ module.exports = function(options) {
     return cb();
   };
   continueStream = function(cb) {
-    var built, content, order;
-    order = unify(transverse(main.deps, modules));
-    content = order.reduce(formatModules, 'var modules = {};\n').concat(requireFactory(main));
-    built = lastest.clone();
-    built.contents = new Buffer(content);
-    built.path = path.join(lastest.base, options.outputs);
-    this.push(built);
+    var built, content;
+    if (hasMain && lastest) {
+      content = (unify(transverse(main.deps, modules))).reduce(formatModules, 'var modules = {};\n').concat(requireFactory(main));
+      built = lastest.clone();
+      built.contents = new Buffer(content);
+      built.path = path.join(lastest.base, options.outputs);
+      this.push(built);
+    }
     return cb();
   };
   return through({
     objectMode: true
-  }, parseModule, function(cb) {
-    if (!(hasMain && lastest)) {
-      return cb();
-    } else {
-      return continueStream(cb);
-    }
-  });
+  }, parseModule, continueStream);
 };
