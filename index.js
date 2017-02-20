@@ -23,10 +23,10 @@ module.exports = function(options) {
     }).toString();
   };
   requireFactory = function(module) {
-    return "var " + options.exports + " = (" + module.code + ").apply(\n    " + options.exports + ",\n    [" + (formatDependencies(module.deps)) + "]\n);";
+    return "var " + options.exports + " = (" + module.code + ").apply(\n  " + options.exports + ",\n  [" + (formatDependencies(module.deps)) + "]\n);";
   };
   defineFactory = function(name, module) {
-    return "modules['" + name + "'] = (" + module.code + ").apply(\n    modules['" + name + "'],\n    [" + (formatDependencies(module.deps)) + "]\n);\n";
+    return "modules['" + name + "'] = (" + module.code + ").apply(\n  modules['" + name + "'],\n  [" + (formatDependencies(module.deps)) + "]\n);\n";
   };
   unify = function(transversed) {
     return transversed.reduce(function(tree, current) {
@@ -50,8 +50,28 @@ module.exports = function(options) {
     return hasMain = true;
   };
   define = function(name, deps, fn) {
+    var args, func, generateRelative, receiveParamsMap, removeExtension;
+    this.allowed = ['code', 'deps', 'name'];
+    removeExtension = function(path) {
+      return path.replace('.js', '');
+    };
+    generateRelative = function(path, base) {
+      return path.replace(base, '');
+    };
+    receiveParamsMap = (function(_this) {
+      return function(map, argument, i) {
+        var param;
+        param = _this.allowed[i];
+        map[param] = argument;
+        return map;
+      };
+    })(this);
+    args = lodash.chain(arguments).reverse().reduce(receiveParamsMap, {}).value();
+    deps = args.deps || [];
+    name = args.name || removeExtension(generateRelative(lastest.path, lastest.base));
+    func = args.code.toString();
     return modules[name] = {
-      'code': fn.toString(),
+      'code': func,
       'deps': deps
     };
   };
@@ -59,8 +79,8 @@ module.exports = function(options) {
     return acumulated.concat(defineFactory(name, modules[name]));
   };
   parseModule = function(file, enc, cb) {
-    eval(file.contents.toString());
     lastest = file;
+    eval(file.contents.toString());
     return cb();
   };
   continueStream = function(cb) {

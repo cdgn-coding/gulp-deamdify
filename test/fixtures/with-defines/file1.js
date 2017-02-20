@@ -1,4 +1,4 @@
-define('file1', ['file2'], function(file2) {
+define(function() {
   return function(e) {
     file2(e);
   }
