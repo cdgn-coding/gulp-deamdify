@@ -56,6 +56,7 @@ module.exports = function(options) {
   };
   transverse = function(deps, modules) {
     return deps.reduce(function(acumulated, current) {
+      console.log(current);
       if (current !== 'exports' && current !== 'require') {
         return acumulated.concat(transverse(modules[current].deps, modules));
       } else {
@@ -83,16 +84,14 @@ module.exports = function(options) {
     return hasMain = true;
   };
   define = function() {
-    var args, deps, func, generateRelative, name, removeExtensionOf;
-    removeExtensionOf = function(path) {
-      return path.replace('.js', '');
-    };
-    generateRelative = function(path, base) {
-      return path.replace(base, '');
+    var args, deps, func, name, removeExtensionOf;
+    removeExtensionOf = function(name) {
+      return name;
     };
     args = mapParams(arguments, ['code', 'deps', 'name']);
     deps = args.deps || [];
-    name = args.name || removeExtensionOf(generateRelative(lastest.path, lastest.cwd));
+    name = args.name || removeExtensionOf(path.relative(lastest.base, lastest.path));
+    console.log;
     func = args.code.toString();
     return modules[name] = {
       'code': func,

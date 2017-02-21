@@ -1,7 +1,6 @@
-declare let require;
+declare const require;
 const dependencies = ['./App'];
 const initializer  = (App) => {
-    let myApp = new App.default()
-    myApp.initialize().run()
+    return new App.default();
 }
 require(dependencies, initializer);

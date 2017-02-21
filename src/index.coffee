@@ -62,6 +62,7 @@ module.exports = (options) ->
   transverse = (deps, modules) ->
     deps.reduce(
       (acumulated, current) -> 
+        console.log current
         if (current isnt 'exports' and current isnt 'require') then (acumulated.concat transverse modules[current].deps, modules)
         else acumulated
       new Array()
@@ -86,11 +87,11 @@ module.exports = (options) ->
     hasMain = true
     
   define = () ->
-    removeExtensionOf = (path) -> path.replace '.js', ''
-    generateRelative = (path, base) -> path.replace base, ''
+    removeExtensionOf = (name) -> name
     args = mapParams arguments, ['code', 'deps', 'name']
     deps = args.deps or []
-    name = args.name or removeExtensionOf generateRelative lastest.path, lastest.cwd
+    name = args.name or removeExtensionOf path.relative lastest.base, lastest.path
+    console.log
     func = args.code.toString()
     modules[name] =
       'code' : func
@@ -99,15 +100,11 @@ module.exports = (options) ->
   formatModules = (acumulated, name) -> acumulated.concat defineFactory name, modules[name]
 
   parseModule = (file, enc, cb) ->
-    #console.log 'path', file.path
-    #console.log 'base', file.base
     lastest = file
     eval file.contents.toString()
     cb()
 
   continueStream = (cb) ->
-    #console.log modules
-    #console.log main
     if hasMain and lastest
       content = (unify transverse main.deps, modules)
         .filter (module) -> module isnt 'exports' and module isnt 'require'

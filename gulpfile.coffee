@@ -37,6 +37,10 @@ gulp.task 'test:ts', () ->
             "target": "es5",
             "noImplicitAny": false,
             "sourceMap": false,
-            "removeComments" : true
-        .pipe deamdify outputs:'from-typescript.js'
+            "removeComments" : true,
+            "outFile" : 'compiled.js',
+            "noEmitHelpers" : false,
+            "importHelpers" : true,
+            "moduleResolution" : "node"
+        #.pipe deamdify outputs:'from-typescript.js'
         .pipe gulp.dest 'test/expected'

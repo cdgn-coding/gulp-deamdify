@@ -19,20 +19,22 @@ modules['./namespace/Module1'] = (function() {
 })()
 modules['./App'] = (function() {
   var exports = {};
-  (function (require, exports, Module1) {
+  (function (require, exports, Module1_1) {
     "use strict";
-    var App = (function () {
+    var App = (function (_super) {
+        __extends(App, _super);
         function App() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         App.prototype.initialize = function () {
-            console.log(Module1);
+            console.log(Module1_1.default);
             return this;
         };
         App.prototype.run = function () {
             return this;
         };
         return App;
-    }());
+    }(Module1_1.default));
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = App;
 }).apply(
@@ -42,8 +44,7 @@ modules['./App'] = (function() {
   return exports;
 })()
 var main = (function (App) {
-    var myApp = new App.default();
-    myApp.initialize().run();
+    return new App.default();
 }).apply(
   main,
   [modules['./App']]
