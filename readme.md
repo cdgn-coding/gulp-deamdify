@@ -22,9 +22,8 @@ Install package with NPM and add it to your development dependencies:
 
 ## Inspiration
 
-Suppose you are writing a javascript (or any other compile-to-javascript language) library and you would want to split in more 
-than one file without having external dependencies. Aditionally, you want your library to be under UDM format so it can be 
-imported with CommonJS and requirejs.
+Suppose you are writing a library in Javascript (or in any other compile-to-javascript language) and you would want to split it 
+in more than one file without having external dependencies. 
 
 In example, let's say you have this library
 
@@ -86,12 +85,11 @@ var main = (function (file1, file3) {
 
 ## Reason to be
 
-1. It can be used with gulp-umd, which takes one file to wrap.
+1. It can be used with gulp-umd in order to take a library written under AMD format and compile it to UMD format, so it can be later used with RequireJs and CommonJs.
 
-2. It is possible to use Typescript and transpile with AMD format, then use this plugin along with gulp-umd to generate
-good autonomous code from strong sources. 
+2. It is possible to transpile Typescript to Javascript using AMD module resolution, and transform the result to code that does not depend on external dependencies.
 
-3. Alternative to Babel's deamdify, since it can be used with Typescript or CoffeeScript
+3. It is an alternative to Babel's deamdify, since it can be used with Typescript or CoffeeScript.
 
 ## Usage
 
@@ -108,17 +106,17 @@ gulp.task('build', function() {
 });
 ```
 
-## Constraints notes
+## Notes
 
 * It transverses the dependency tree to properly order the code.
-* It expects no circular dependencies
-* It expects that all files from gulp.src contain all submodules
-* More than one define can be found in one file, but it's pretty recommended to use one define per file
-* Only handles one file which makes a require([...] function(...) {...}) call
+* It expects no circular dependencies.
+* It expects that the files from *gulp.src* contain all submodules.
+* More than one *define* can be found in one file, but it's recommended to use one define per file
+* Only handles one file that does a *require* call, the other files must do *define* calls
 
 ## Contribute
 
-Feel free to post an issue if you feel like or fork
+Feel free to fork or post and issue if you feel like.
 
 ## License
 
