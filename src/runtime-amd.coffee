@@ -1,22 +1,23 @@
 require = (deps, code) -> 
-  define::executeFactory null, code, deps
+  define::modulefactory null, code, deps
 
 define = (name, deps, code) ->
-  define.modules[name] = define::executeFactory null, code, deps
-
-
-define::executeFactory = (scope, code, deps) ->
   define.modules.exports = {}
+  define.modules[name] = define::modulefactory(
+    define.modules[name],
+    code,
+    deps
+  )
+
+define::modulefactory = (scope, code, deps) ->
+  factory = if 'exports' in deps then define::fromExport else define::fromReturn
   indexed = deps.indexOf 'exports'
-  define::modulefactory(
+  factory(
     scope,
     code,
     (define::selectDeps deps),
     indexed
-  )()
-
-define::modulefactory = (scope, code, deps) ->
-  if 'exports' in deps then define::fromExport else define::fromReturn
+  )
 define::getModule = (name) -> define.modules[name]
 define::selectDeps = (deps) -> deps.map define::getModule
 define::fromExport = (scope, code, deps, indexed) ->
