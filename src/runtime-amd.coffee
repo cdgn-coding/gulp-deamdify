@@ -1,26 +1,28 @@
-__utils =
-    currentAllowed : []
-    getProperty : (object, key) -> object[key]
-    setProperty : (object, key, value) -> object[key] = value
-    getPosition : (array, position) -> array[position]
-    generateArrayFrom : (args) -> Array::slice.call args
-    selectDependencies : (all, required) -> required.map (name) -> @getPosition all, name
-    toTuples : (argument, i) -> 
-        'key': @getProperty @currentAllowed, i
-        'value' : argument
-    toAsociative : (map, param) ->  
-        @setProperty map, (@getProperty param, 'key'), (@getProperty param, 'value')
-        return map
+require = (deps, code) -> 
+  define::executeFactory null, deps, code
 
-require = () -> 
-    define.allowed = @allowed = ['code', 'deps']
+define = (name, deps, code) ->
+  define.modules[name] = define::executeFactory null, deps, code
 
-define = () ->
-    __utils.currentAllowed = define.allowed = ['code', 'deps', 'name']
-    define.modules = {} or define.modules
-    define.modules.exports = {}
-    define.modules.require = require
-    module = __utils.generateArrayFrom arguments
-        .reverse()
-        .map __utils.toTuples.bind __utils
-        #.reduce __utils.toAsociative.bind __utils
+
+define::executeFactory = (scope, code, deps) ->
+  define.modules.exports = {}
+  indexed = deps.indexOf 'exports'
+  define::factory(
+    scope,
+    code,
+    (define::selectDeps deps),
+    indexed
+  )()
+
+define::modulefactory = (scope, code, deps) ->
+  if 'exports' in deps then define::fromExport else define::fromReturn
+define::getModule = (name) -> define.modules[name]
+define::selectDeps = (deps) -> deps.map define::getModule
+define::fromExport = (scope, code, deps, indexed) ->
+  () -> 
+    code.apply scope, deps
+    return deps[indexed]
+define::fromReturn = (scope, code, deps) -> () -> code.apply scope, deps
+define.modules = {}
+define.modules.require = define::getModule
