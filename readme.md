@@ -99,6 +99,30 @@ gulp.task 'build', () ->
       .pipe(gulp.dest('dist/'))
 ```
 
+### Usage with gulp-umd
+```js
+var deamdify = require('gulp-deamdify');
+var ts = require('gulp-typescript');
+var umd = require('gulp-umd');
+gulp.task('build', () => {
+    return gulp
+        .src('src/**/*.ts')
+        .pipe(ts({
+            "module": "amd",
+            "target": "es5",
+            "noImplicitAny": false,
+            "sourceMap": false,
+            "removeComments" : true,
+            "outFile"  : 'compiled.js'
+        }))
+        .pipe(deamdify({outputs:'Cherry.js'}))
+        .pipe(umd({
+          'exports' : 'main'
+        }))
+        .pipe(gulp.dest('dist/'));
+});
+```
+
 
 ## Contribute
 
