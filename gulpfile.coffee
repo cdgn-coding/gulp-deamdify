@@ -26,11 +26,13 @@ gulp.task 'build', () ->
 gulp.task 'watch', () ->
   return gulp.watch 'src/*.coffee', ['build']
 
+gulp.task 'test', ['test:js', 'test:ts']
+
 gulp.task 'test:js', () ->
   return gulp.src 'test/fixtures/with-defines/*.js'
     .pipe optimizer {baseUrl: '/'}
     .pipe deamdify outputs:'defines-from-javascript.js'
-    .pipe gulp.dest 'test/expected'
+    .pipe gulp.dest 'test/compiled'
 
 gulp.task 'test:ts', () ->
     return gulp.src 'test/fixtures/typescript/**/*.ts'
@@ -42,4 +44,4 @@ gulp.task 'test:ts', () ->
             "removeComments" : true,
             "outFile" : 'compiled.js'
         .pipe deamdify outputs:'from-typescript.js'
-        .pipe gulp.dest 'test/expected'
+        .pipe gulp.dest 'test/compiled'

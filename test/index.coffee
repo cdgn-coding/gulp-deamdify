@@ -3,7 +3,10 @@ path = require 'path'
 assert = require 'stream-assert'
 gulp = require 'gulp'
 deamdify = require '../'
+Browser = require 'zombie'
+require './server'
 require 'mocha'
+
 
 describe 'gulp-deamdify', () ->
   it('Should not to stream any file, if no one goes in', (done) -> 
@@ -28,4 +31,20 @@ describe 'gulp-deamdify', () ->
         expected = path.resolve path.join """#{__dirname}/fixtures/with-defines/main.js"""
         given.should.equal expected
       .pipe assert.end done
+  )
+
+describe 'Typescript compiled module', () ->
+  browser = new Browser
+  before () -> browser.visit 'http://localhost:4000/typescript-test.html'
+  it('Should have main in the global scope', (done) ->
+    browser.assert.evaluate('typeof main', 'object');
+    done()
+  )
+  it('Should inherit the \'log\' method from Module1', (done) ->
+    browser.assert.evaluate('typeof main.log', 'function');
+    done()
+  )
+  it('Should print \'Hello world!\'', (done) ->
+    browser.assert.text('.message', 'Hello World!');
+    done()
   )

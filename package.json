@@ -15,20 +15,23 @@
     "vinyl": "^2.0.1"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "coffee-script": "^1.12.4",
+    "express": "^4.14.1",
     "gulp": "^3.9.1",
     "gulp-amd-optimizer": "^0.6.0",
     "gulp-coffee": "^2.3.3",
     "gulp-plumber": "^1.1.0",
     "gulp-typescript": "^3.1.5",
     "gulp-util": "^3.0.8",
-    "mocha": "^3.2.0",
     "should": "^11.2.0",
+    "mocha": "^3.2.0",
     "stream-assert": "^2.0.3",
-    "typescript": "^2.1.6"
+    "typescript": "^2.1.6",
+    "zombie": "^5.0.5"
   },
   "scripts": {
-    "test": "mocha --compilers coffee:coffee-script/register",
+    "test": "gulp test && mocha --compilers coffee:coffee-script/register",
     "build": "gulp build"
   },
   "repository": {

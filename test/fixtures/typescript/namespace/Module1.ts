@@ -5,4 +5,7 @@ export default class Module1 {
     Method() {
       console.log('Inherited method');
     }
+    log(e) {
+      console.log(e);
+    }
 }

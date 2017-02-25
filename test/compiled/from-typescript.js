@@ -61,6 +61,9 @@ define("./namespace/Module1", ["require", "exports"], function (require, exports
         Module1.prototype.Method = function () {
             console.log('Inherited method');
         };
+        Module1.prototype.log = function (e) {
+            console.log(e);
+        };
         return Module1;
     }());
     exports.default = Module1;
@@ -71,7 +74,14 @@ define("./App", ["require", "exports", "./namespace/Module1"], function (require
     var App = (function (_super) {
         __extends(App, _super);
         function App() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
+            var message = document.createElement('div');
+            message.innerHTML = 'Hello World!';
+            message.className = 'message';
+            document
+                .querySelector('body')
+                .appendChild(message);
+            return _this;
         }
         App.prototype.initialize = function () {
             return this;
