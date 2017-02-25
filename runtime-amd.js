@@ -1,20 +1,22 @@
-var define, require,
+var define, main, require,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
+main = {};
+
 require = function(deps, code) {
-  return define.prototype.modulefactory(null, code, deps);
+  return main = define.prototype.factory(main, code, deps);
 };
 
 define = function(name, deps, code) {
   define.modules.exports = {};
-  return define.modules[name] = define.prototype.modulefactory(define.modules[name], code, deps);
+  return define.modules[name] = define.prototype.factory(define.modules[name], code, deps);
 };
 
-define.prototype.modulefactory = function(scope, code, deps) {
-  var factory, indexed;
-  factory = indexOf.call(deps, 'exports') >= 0 ? define.prototype.fromExport : define.prototype.fromReturn;
+define.prototype.factory = function(scope, code, deps) {
+  var generator, indexed;
+  generator = indexOf.call(deps, 'exports') >= 0 ? define.prototype.fromExport : define.prototype.fromReturn;
   indexed = deps.indexOf('exports');
-  return factory(scope, code, define.prototype.selectDeps(deps), indexed);
+  return generator(scope, code, define.prototype.selectDeps(deps), indexed);
 };
 
 define.prototype.getModule = function(name) {

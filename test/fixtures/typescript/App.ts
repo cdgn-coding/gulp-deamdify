@@ -1,6 +1,9 @@
 
+///<amd-module name='./App'/>
 
-export default class App {
+import Module1 from './namespace/Module1'
+
+export default class App extends Module1 {
     initialize() {
 
         return this;
