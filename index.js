@@ -22,7 +22,7 @@ module.exports = function(options) {
   flush = function(cb) {
     var output, polyfill;
     if (lastest) {
-      polyfill = fs.readFileSync('runtime-amd.js', 'utf8');
+      polyfill = fs.readFileSync(__dirname + '/runtime-amd.js', 'utf8');
       contents = ("\n" + polyfill + "\n") + contents;
       output = lastest.clone();
       output.contents = new Buffer(contents);
