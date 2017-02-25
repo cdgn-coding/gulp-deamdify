@@ -7,17 +7,18 @@ Install package with NPM and add it to your development dependencies:
 ## Information
 
 <table>
-<tr>
-<td>Package</td><td>gulp-deamdify</td>
-</tr>
-<tr>
-<td>Description</td>
-<td>Converts a module written in various files and AMD format in an autonomous one-file module.</td>
-</tr>
-<tr>
-<td>Node Version</td>
-<td>>= 1.0.0</td>
-</tr>
+  <tr>
+    <td>Package</td>
+    <td>gulp-deamdify</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>Converts a module written in various files and AMD format in an autonomous one-file module.</td>
+  </tr>
+  <tr>
+    <td>Node Version</td>
+    <td>>= 1.0.0</td>
+  </tr>
 </table>
 
 ## Inspiration
@@ -51,37 +52,9 @@ define('file1', ['file2'], function(file2) {
 })
 ```
 
-Using this plugin you can generate autonomous browser compatible code that does exactly the same
-
-```js
-var modules = {};
-modules['file3'] = (function () {
-  return console.log;
-}).apply(
-    modules['file3'],
-    []
-);
-modules['file2'] = (function (file3) {
-  return file3;
-}).apply(
-    modules['file2'],
-    [modules['file3']]
-);
-modules['file1'] = (function (file2) {
-  return function(e) {
-    file2(e);
-  }
-}).apply(
-    modules['file1'],
-    [modules['file2']]
-);
-var main = (function (file1, file3) {
-  file1('Hello world!');
-}).apply(
-    main,
-    [modules['file1'], modules['file3']]
-);
-```
+This plugin polyfills the code with a tiny AMD library and concatenates the results in order to get
+an one-file script that does exactly what your original code does. *Note that this plugin won't order your files,*
+*you'll have to use another plugin such as gulp-amd-optimizer*
 
 ## Reason to be
 
@@ -93,30 +66,43 @@ var main = (function (file1, file3) {
 
 ## Usage
 
+### Usage with Javascript
 ```js
 var deamdify = require('gulp-deamdify');
+var optimizer = require('gulp-amd-optimizer');
 
 gulp.task('build', function() {
   return gulp.src('src/**/*.js')
+    .pipe(optimizer({baseUrl: '/my-base-url/'}))
     .pipe(deamdify({
       outputs : 'my-library.js',
-      exports : 'myLibrary'
     }))
     .pipe(gulp.dest('dist/'));
 });
 ```
 
-## Notes
+### Usage with Typescript
+```js
+var deamdify = require('gulp-deamdify');
+var ts = require('gulp-typescript');
 
-* It transverses the dependency tree to properly order the code.
-* It expects no circular dependencies.
-* It expects that the files from *gulp.src* contain all submodules.
-* More than one *define* can be found in one file, but it's recommended to use one define per file
-* Only handles one file that does a *require* call, the other files must do *define* calls
+gulp.task 'build', () ->
+    return gulp.src('src/**/*.ts')
+      .pipe(ts({
+          "module": "amd",
+          "target": "es5",
+          "noImplicitAny": false,
+          "sourceMap": false,
+          "removeComments" : true,
+          "outFile" : 'compiled.js'
+      })).pipe(deamdify({outputs:'my-library.js'}))
+      .pipe(gulp.dest('dist/'))
+```
+
 
 ## Contribute
 
-Feel free to fork or post and issue if you feel like.
+Please feel free to fork or post and issue if you feel like.
 
 ## License
 
