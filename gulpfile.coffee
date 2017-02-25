@@ -4,6 +4,7 @@ gutil = require 'gulp-util'
 plumber = require 'gulp-plumber'
 ts = require 'gulp-typescript'
 deamdify = require './'
+optimizer = require 'gulp-amd-optimizer'
 
 handler = (error) ->
   gutil.log(
@@ -27,6 +28,7 @@ gulp.task 'watch', () ->
 
 gulp.task 'test:js', () ->
   return gulp.src 'test/fixtures/with-defines/*.js'
+    .pipe optimizer {baseUrl: '/'}
     .pipe deamdify outputs:'defines-from-javascript.js'
     .pipe gulp.dest 'test/expected'
 

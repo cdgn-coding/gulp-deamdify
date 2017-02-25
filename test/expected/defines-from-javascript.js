@@ -42,20 +42,28 @@ define.modules = {};
 define.modules.require = define.prototype.getModule;
 
 
+define('file3', [], function() {
+  return console.log;
+})
+
+
+
+define('file2', ['file3'], function(file3) {
+  return file3;
+})
+
+
+
 define('file1', ['file2'], function(file2) {
   return function(e) {
     file2(e);
   }
 })
 
-define('file2', ['file3'], function(file3) {
-  return file3;
-})
 
-define('file3', [], function() {
-  return console.log;
-})
 
 require(['file1'], function(file1) {
   file1('Hello world!');
 })
+
+
