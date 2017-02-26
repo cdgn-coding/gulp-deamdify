@@ -117,7 +117,7 @@ gulp.task('build', () => {
         }))
         .pipe(deamdify({outputs:'Cherry.js'}))
         .pipe(umd({
-          'exports' : 'main'
+          'exports' : function(e) { return 'main'; }
         }))
         .pipe(gulp.dest('dist/'));
 });
